@@ -8,6 +8,14 @@ XDock 从用户提供的 2013 DDE 截图中拆分底部栏：负责固定应用�
 
 当前状态：设计规格，尚无可执行 Dock，尚未验证平台兼容性。
 
+## 琥珀色设计图
+
+![XDock 琥珀色设计图](assets/xdock-amber.png)
+
+使用内置 ImageGen，基于原图和选定的 XLaunch 琥珀色稿制作；这是视觉概念图，尚非可运行 Dock。[生成提示词](assets/prompts.json)。
+
+## 原始参考
+
 ![用户提供的 2013 DDE 参考图](assets/dde-2013-reference.png)
 
 视觉沿用原图底部的贴边布局、紧凑彩色图标、轻薄深色透明底栏，与琥珀色桌面搭配。截图中的全屏启动器属于 XLaunch。

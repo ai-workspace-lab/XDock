@@ -8,6 +8,12 @@ XDock is the independently developed dock component inspired by the bottom bar o
 
 Status: design specification only. No executable dock or platform compatibility validation is included yet.
 
+## Amber design concept
+
+![XDock amber concept](assets/xdock-amber.png)
+
+Built-in ImageGen concept, grounded in the reference below and the selected XLaunch amber design. This is a visual mockup, not a running dock. [Generation prompts](assets/prompts.json).
+
 ## Visual reference
 
 ![User-supplied 2013 DDE reference](assets/dde-2013-reference.png)
