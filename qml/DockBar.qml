@@ -8,12 +8,14 @@ Item {
     // Transparent room above the surface keeps enlarged icons from clipping.
     implicitHeight: 132
     property string theme: "classic"
+    property bool animationsEnabled: true
     property bool fixedClock: false
     property int focusedIndex: 0
     property int selectedIndex: -1
     property string clockText: fixedClock ? "10:38" : Qt.formatTime(new Date(), "hh:mm")
     property real pointerX: -1
     property bool pointerActive: false
+    readonly property bool magnificationActive: animationsEnabled && pointerActive
     readonly property bool systemTheme: theme === "system"
     readonly property real uiScale: Math.min(1, height / 78)
     readonly property real iconSize: 52 * uiScale
@@ -32,7 +34,7 @@ Item {
     property bool keyboardFocus: false
 
     function iconInfluence(index) {
-        if (!pointerActive || pointerX < 0) return 0
+        if (!magnificationActive || pointerX < 0) return 0
         var center = 14 * uiScale + index * slotWidth + iconSize / 2
         var distance = Math.abs(pointerX - center)
         // A cosine falloff has a zero-slope start and end, avoiding a visible
@@ -53,7 +55,7 @@ Item {
     }
 
     function iconOffset(index) {
-        if (!pointerActive || pointerX < 0 || visibleCount === 0) return 0
+        if (!magnificationActive || pointerX < 0 || visibleCount === 0) return 0
         var focalIndex = focalIconIndex()
         if (index === focalIndex) return 0
 
@@ -135,9 +137,9 @@ Item {
                     height: width
                     y: parent.height - height
                     opacity: mouse.pressed ? 0.78 : 1
-                    Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                    Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    Behavior on width { enabled: dock.animationsEnabled; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    Behavior on height { enabled: dock.animationsEnabled; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    Behavior on y { enabled: dock.animationsEnabled; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                 }
                 Rectangle {
                     anchors.fill: parent; anchors.margins: -3 * dock.uiScale
@@ -168,6 +170,7 @@ Item {
                     popupType: Qt.platform.os === "osx" ? Popup.Native : Popup.Window
                     MenuItem {
                         text: "移除固定"
+                        visible: !tile.app.transient
                         onTriggered: dock.removeRequested(tile.index)
                     }
                     MenuItem {
@@ -182,7 +185,7 @@ Item {
                     popupType: Popup.Window
                     y: -height - 6
                 }
-                Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                Behavior on x { enabled: dock.animationsEnabled; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
             }
         }
         // Tracks hover without taking click ownership, so the existing tile

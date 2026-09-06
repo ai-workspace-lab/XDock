@@ -9,6 +9,7 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 #include <QStyle>
+#include <QUrl>
 #include <QMap>
 #include <memory>
 
@@ -21,6 +22,11 @@ public:
         const auto parts = id.split('/');
         const QString name = parts.value(0);
         QIcon icon;
+        if (name.startsWith("path:")) {
+            const auto path = QUrl::fromPercentEncoding(name.mid(5).toUtf8());
+            if (QFileInfo::exists(path) && qobject_cast<QApplication *>(qApp))
+                icon = QFileIconProvider().icon(QFileInfo(path));
+        }
 #ifdef Q_OS_MACOS
         const QMap<QString, QString> bundles = {
             {"view-app-grid", "/System/Applications/Launchpad.app"},
@@ -36,7 +42,7 @@ public:
             {"preferences-system", "/System/Applications/System Settings.app"}
         };
         const auto path = bundles.value(name);
-        if (parts.size() == 1 && !path.isEmpty() && QFileInfo::exists(path) && qobject_cast<QApplication *>(qApp))
+        if (icon.isNull() && parts.size() == 1 && !path.isEmpty() && QFileInfo::exists(path) && qobject_cast<QApplication *>(qApp))
             icon = QFileIconProvider().icon(QFileInfo(path));
 #endif
 #ifdef Q_OS_LINUX

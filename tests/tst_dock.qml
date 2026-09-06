@@ -23,7 +23,7 @@ Item {
     when: windowShown
     SignalSpy { id: activation; target: dock; signalName: "appActivated" }
     function init() {
-        dock.width = 1204; dock.theme = "classic"; dock.apps = testApps; dock.focusedIndex = 0; activation.clear()
+        dock.width = 1204; dock.theme = "classic"; dock.apps = testApps; dock.focusedIndex = 0; dock.animationsEnabled = true; activation.clear()
         wait(20)
     }
     function test_pointer_launch() {
@@ -57,6 +57,10 @@ Item {
         compare(dock.iconMagnification(0), 1)
         verify(dock.iconOffset(2) < 0)
         verify(dock.iconOffset(4) > 0)
+        dock.animationsEnabled = false
+        compare(dock.iconMagnification(3), 1)
+        compare(dock.iconOffset(2), 0)
+        dock.animationsEnabled = true
         dock.pointerActive = false
         compare(dock.iconMagnification(3), 1)
     }

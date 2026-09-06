@@ -2,15 +2,22 @@
 #include "platform/PlatformAdapter.h"
 #include <QFutureWatcher>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonParseError>
+#include <QLocalServer>
+#include <QLocalSocket>
+#include <QUrl>
 #include <QUuid>
 #include <QtConcurrent>
+#include <utility>
 
 namespace {
 QVariantMap dockApp(const QString &key, const QString &name, const QString &icon,
                     const QString &launchId = {}) {
     return {{"key", key}, {"name", name}, {"icon", icon}, {"launchId", launchId}};
 }
+
+constexpr auto launchEventServerName = "ai-workspace-lab.xdock.launch-events";
 
 QVariantList defaultApps() {
     return {
@@ -48,8 +55,15 @@ DockBackend::DockBackend(bool preview, QObject *parent)
     : QObject(parent), m_preview(preview) {
     m_theme = preview ? "classic" : m_settings.value("appearance/theme", "classic").toString();
     m_dockEdge = preview ? "bottom" : m_settings.value("placement/edge", "bottom").toString();
+    m_animationsEnabled = preview || m_settings.value("appearance/animationsEnabled", true).toBool();
     if (m_dockEdge != "bottom" && m_dockEdge != "top") m_dockEdge = "bottom";
     m_apps = preview ? defaultApps() : readApps(m_settings);
+    if (!preview) startLaunchEventServer();
+}
+QVariantList DockBackend::apps() const {
+    auto combined = m_apps;
+    combined.append(m_runningApps);
+    return combined;
 }
 void DockBackend::setTheme(const QString &theme) {
     if ((theme != "classic" && theme != "system") || m_theme == theme) return;
@@ -72,6 +86,15 @@ void DockBackend::setDockEdge(const QString &edge) {
         m_settings.sync();
     }
     emit dockEdgeChanged();
+}
+void DockBackend::setAnimationsEnabled(bool enabled) {
+    if (m_animationsEnabled == enabled) return;
+    m_animationsEnabled = enabled;
+    if (!m_preview) {
+        m_settings.setValue("appearance/animationsEnabled", enabled);
+        m_settings.sync();
+    }
+    emit animationsEnabledChanged();
 }
 void DockBackend::saveApps() {
     if (!m_preview) {
@@ -104,6 +127,67 @@ bool DockBackend::removePinnedApp(int index) {
 void DockBackend::resetPinnedApps() {
     m_apps = defaultApps();
     saveApps();
+    emit appsChanged();
+}
+void DockBackend::startLaunchEventServer() {
+    m_launchEvents = new QLocalServer(this);
+    if (!m_launchEvents->listen(QString::fromLatin1(launchEventServerName))) {
+        // Another XDock may already own the endpoint. Probe it before removing
+        // a stale Unix-domain socket so a second launch cannot disrupt it.
+        QLocalSocket probe;
+        probe.connectToServer(QString::fromLatin1(launchEventServerName));
+        if (!probe.waitForConnected(100)) {
+            QLocalServer::removeServer(QString::fromLatin1(launchEventServerName));
+            m_launchEvents->listen(QString::fromLatin1(launchEventServerName));
+        }
+        if (!m_launchEvents->isListening()) {
+            m_launchEvents->deleteLater();
+            m_launchEvents = nullptr;
+            return;
+        }
+    }
+    connect(m_launchEvents, &QLocalServer::newConnection, this, [this] {
+        while (m_launchEvents->hasPendingConnections()) {
+            auto *socket = m_launchEvents->nextPendingConnection();
+            connect(socket, &QLocalSocket::readyRead, this, [this, socket] { readLaunchEvent(socket); });
+            connect(socket, &QLocalSocket::disconnected, this, [this, socket] {
+                readLaunchEvent(socket);
+                m_launchEventBuffers.remove(socket);
+                socket->deleteLater();
+            });
+        }
+    });
+}
+void DockBackend::readLaunchEvent(QLocalSocket *socket) {
+    auto &buffer = m_launchEventBuffers[socket];
+    buffer.append(socket->readAll());
+    while (true) {
+        const auto newline = buffer.indexOf('\n');
+        if (newline < 0) break;
+        const auto line = buffer.left(newline);
+        buffer.remove(0, newline + 1);
+        QJsonParseError error;
+        const auto event = QJsonDocument::fromJson(line, &error).object();
+        if (error.error != QJsonParseError::NoError || event.value("type").toString() != "launched") continue;
+        const auto name = event.value("name").toString().trimmed();
+        const auto launchId = event.value("launchId").toString().trimmed();
+        if (name.isEmpty() || launchId.isEmpty()) continue;
+        addRunningApp(name, launchId, event.value("icon").toString());
+        socket->write("ok\n");
+        socket->flush();
+    }
+}
+void DockBackend::addRunningApp(const QString &name, const QString &launchId, const QString &icon) {
+    for (const auto &entry : std::as_const(m_apps)) {
+        if (entry.toMap().value("launchId").toString() == launchId) return;
+    }
+    for (const auto &entry : std::as_const(m_runningApps)) {
+        if (entry.toMap().value("launchId").toString() == launchId) return;
+    }
+    auto app = dockApp(QStringLiteral("running-") + QUuid::createUuid().toString(QUuid::WithoutBraces),
+                       name, icon.isEmpty() ? QStringLiteral("application-x-executable") : icon, launchId);
+    app.insert("transient", true);
+    m_runningApps.append(app);
     emit appsChanged();
 }
 void DockBackend::launch(const QString &key, const QString &name, const QString &launchId) {

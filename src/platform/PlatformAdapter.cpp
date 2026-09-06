@@ -113,7 +113,8 @@ QString PlatformAdapter::launch(const QString &application, const QString &launc
     const auto candidates = launchId.isEmpty() ? bundles.value(application) : QStringList{launchId};
     for (const auto &bundle : candidates) {
         QProcess process;
-        process.start(open, {"-b", bundle});
+        const bool bundlePath = bundle.endsWith(".app", Qt::CaseInsensitive) && QFileInfo::exists(bundle);
+        process.start(open, bundlePath ? QStringList{bundle} : QStringList{"-b", bundle});
         if (!process.waitForStarted(1500))
             return QStringLiteral("无法启动 macOS open 命令。");
         if (!process.waitForFinished(5000)) {

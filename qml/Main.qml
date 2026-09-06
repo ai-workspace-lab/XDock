@@ -8,9 +8,9 @@ ApplicationWindow {
     width: previewWidth
     // Keep the original compact dock at rest. The transparent room expands
     // upward only while the fish-eye interaction needs it.
-    height: dock.pointerActive ? 132 : 78
+    height: dock.magnificationActive ? 132 : 78
     Behavior on height {
-        enabled: !captureMode
+        enabled: dockBackend.animationsEnabled && !captureMode
         NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
     }
     minimumWidth: 320
@@ -20,6 +20,7 @@ ApplicationWindow {
         id: dock
         anchors.fill: parent
         theme: dockBackend.theme
+        animationsEnabled: dockBackend.animationsEnabled
         apps: dockBackend.apps
         fixedClock: captureMode
         onAppActivated: function(key, name, launchId) { dockBackend.launch(key, name, launchId) }
@@ -54,7 +55,7 @@ ApplicationWindow {
     Window {
         id: settings
         title: "XDock 设置"
-        width: 460; height: 520
+        width: 460; height: 560
         transientParent: root
         color: palette.window
         Column {
@@ -75,6 +76,11 @@ ApplicationWindow {
                 model: ["底部常驻（默认）", "顶部常驻"]
                 currentIndex: dockBackend.dockEdge === "top" ? 1 : 0
                 onActivated: dockBackend.dockEdge = currentIndex === 1 ? "top" : "bottom"
+            }
+            CheckBox {
+                text: "启用 Dock 动画"
+                checked: dockBackend.animationsEnabled
+                onClicked: dockBackend.animationsEnabled = checked
             }
             Label { text: "添加固定应用"; font.bold: true }
             TextField {

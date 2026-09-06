@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.21)
 project(XDock VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 Concurrent Widgets)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 Concurrent Network Widgets)
 qt_standard_project_setup(REQUIRES 6.8)
 qt_add_executable(xdock src/main.cpp src/SystemIcons.h src/DockBackend.cpp src/DockBackend.h
     src/platform/PlatformAdapter.cpp src/platform/PlatformAdapter.h)
 qt_add_resources(xdock dock_resources PREFIX "/" FILES
     qml/Main.qml qml/DockBar.qml qml/SystemIcon.qml)
-target_link_libraries(xdock PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent Qt6::Widgets)
+target_link_libraries(xdock PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent Qt6::Network Qt6::Widgets)
 if(APPLE)
     set_target_properties(xdock PROPERTIES MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.ai-workspace-lab.xdock"

@@ -37,6 +37,10 @@ macOS 本地预览命令为 `./build/xdock.app/Contents/MacOS/xdock --preview`�
 
 Dock 固定项由后端模型管理：可在设置中按桌面 ID、macOS Bundle ID 或 Windows 可执行文件添加，右键图标移除，顺序与自定义图标主题名称会持久保存。Linux 使用 `.desktop` 与 `gio` 启动应用，macOS 使用应用 Bundle ID 和系统 `open` 启动应用，Windows 预留常见可执行文件映射。托盘服务和运行窗口切换仍待补齐。
 
+XLaunch 成功打开应用后会通过本机 IPC 通知正在运行的 XDock。未固定的应用会作为本次会话的临时运行项显示在 Dock 上，并沿用该应用的系统图标；重启 XDock 后临时项清空。
+
+设置中的“启用 Dock 动画”默认开启。关闭后会立即停用鱼眼放大、相邻图标位移与 Dock 高度过渡；此选项会在重启后保留。
+
 ## macOS 打包
 
 运行 `./packaging/package-macos.sh` 构建 Release、执行测试、打包 Qt 依赖并进行本机 ad-hoc 签名。产物位于 `dist/XDock-0.1.0-macos-arm64/`，包含可独立运行的 `XDock.app` 和 ZIP 包；当前本机版本面向 Apple Silicon、macOS 26+。可将应用复制到 `/Applications/XDock.app` 安装。
