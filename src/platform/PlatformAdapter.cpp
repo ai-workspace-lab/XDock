@@ -20,6 +20,13 @@ void PlatformAdapter::initialize(bool layerShell)
 #endif
 }
 
+#ifndef Q_OS_MACOS
+void PlatformAdapter::configureDockWindow(QWindow *window)
+{
+    Q_UNUSED(window);
+}
+#endif
+
 QString PlatformAdapter::attach(QWindow *window, int reservedHeight, bool layerShell)
 {
     const auto platform = QGuiApplication::platformName();

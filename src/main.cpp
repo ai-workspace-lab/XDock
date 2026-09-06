@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 #endif
     PlatformAdapter::initialize(requestedLayerShell && !requestedPreview);
     QApplication app(argc, argv);
+    app.setQuitOnLastWindowClosed(false);
     app.setOrganizationName("ai-workspace-lab");
     app.setApplicationName("XDock");
     app.setApplicationVersion("0.1.0");
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
         backend.setPlatformStatus("独立视觉预览 · Linux 优先");
     }
     window->show();
+    if (!preview) PlatformAdapter::configureDockWindow(window);
     if (parser.isSet("capture")) {
         QTimer::singleShot(600, &app, [&] {
             const QImage capture = window->grabWindow().scaled(window->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);

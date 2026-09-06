@@ -123,6 +123,7 @@ Item {
                 readonly property var app: dock.apps[index]
                 readonly property real iconMagnification: dock.iconMagnification(index)
                 readonly property real baseX: 14 * dock.uiScale + index * dock.slotWidth
+                property bool labelArmed: false
                 x: baseX + dock.iconOffset(index)
                 y: parent.height - 60 * dock.uiScale
                 width: dock.iconSize; height: 58 * dock.uiScale
@@ -158,9 +159,12 @@ Item {
                     anchors.fill: parent; hoverEnabled: true
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     cursorShape: Qt.PointingHandCursor
+                    onEntered: tile.labelArmed = true
+                    onExited: tile.labelArmed = false
                     onClicked: function(event) {
                         dock.focusedIndex = tile.index
                         dock.keyboardFocus = false
+                        tile.labelArmed = false
                         if (event.button === Qt.RightButton) appMenu.open()
                         else dock.activate(tile.index)
                     }
@@ -179,11 +183,13 @@ Item {
                     }
                 }
                 ToolTip {
-                    visible: mouse.containsMouse
+                    parent: dock
+                    visible: mouse.containsMouse && tile.labelArmed
                     delay: 550
                     text: tile.app.name
                     popupType: Popup.Window
-                    y: -height - 6
+                    x: tile.x + (tile.width - width) / 2
+                    y: tile.y - height - 6
                 }
                 Behavior on x { enabled: dock.animationsEnabled; NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
             }

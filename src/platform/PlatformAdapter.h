@@ -6,5 +6,6 @@ class QWindow;
 namespace PlatformAdapter {
 void initialize(bool layerShell);
 QString attach(QWindow *window, int reservedHeight, bool layerShell);
+void configureDockWindow(QWindow *window);
 QString launch(const QString &application, const QString &launchId = {});
 }

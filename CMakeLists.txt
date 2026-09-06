@@ -10,6 +10,8 @@ qt_add_resources(xdock dock_resources PREFIX "/" FILES
     qml/Main.qml qml/DockBar.qml qml/SystemIcon.qml)
 target_link_libraries(xdock PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent Qt6::Network Qt6::Widgets)
 if(APPLE)
+    enable_language(OBJCXX)
+    target_sources(xdock PRIVATE src/platform/DockWindow.mm)
     set_target_properties(xdock PROPERTIES MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.ai-workspace-lab.xdock"
         MACOSX_BUNDLE_BUNDLE_NAME "XDock"
