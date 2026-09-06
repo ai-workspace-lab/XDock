@@ -1,6 +1,6 @@
 # XDock 设计 brief / Design brief
 
-日期：2026-09-05。状态：独立仓库与职责已确定，琥珀色概念图已产出；交互状态与实现待推进。
+日期：2026-09-05。更新：用户确认 Linux 优先、C++ + Qt Quick/QML、兼容系统主题。用户补充：只提取 Dock 风格，Logo 使用系统默认图标，不复用截图图标。原生视觉实现已加入，最新截图为 `assets/reference/dock-strip.png`；实际实现状态见 [implementation.md](implementation.md)。以下保留原始设计目标，不能作为已实现能力清单。
 
 ![XDock amber concept](../assets/xdock-amber.png)
 
@@ -36,7 +36,7 @@ XDock 是桌面 Dock，不是 Docker 容器管理工具。两个产品无强制�
 
 ## 核心与适配层
 
-技术栈已由用户确定：**C++ + Qt Quick/QML**，与 XLaunch 统一。共享主题约定分为经典琥珀和系统默认配色/字体；macOS 通过 Qt 平台主题，GTK 桌面通过适配器或 Qt 平台主题插件映射。GTK CSS 不直接用于 QML；各桌面的实际主题兼容性需要验证。XDock 当前仍是设计阶段，尚未实现原生代码。
+技术栈已由用户确定：**C++ + Qt Quick/QML**，与 XLaunch 统一。共享主题约定分为经典琥珀和系统默认配色/字体；macOS 通过 Qt 平台主题，GTK 桌面通过适配器或 Qt 平台主题插件映射。GTK CSS 不直接用于 QML；各桌面的实际主题兼容性需要验证。原生代码已实现首版，Linux 适配器仍待实际桌面验证。
 
 公共核心管理固定顺序、应用身份、运行状态模型、配置及交互。平台适配层提供应用发现、进程与窗口状态、激活、屏幕布局、保留边缘空间、焦点、托盘及系统动作。
 

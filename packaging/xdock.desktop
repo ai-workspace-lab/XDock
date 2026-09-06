@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=XDock
+Comment=Classic desktop dock
+Exec=xdock
+Terminal=false
+Categories=Utility;
+StartupNotify=false

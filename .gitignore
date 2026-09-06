@@ -1,0 +1,5 @@
+/build*/
+/dist/
+/.qt/
+*.user
+.DS_Store
